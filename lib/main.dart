@@ -9,9 +9,11 @@ void main() {
 class TriviaMind extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: Scaffold(
-      appBar: AppBar(title: Text("Trivia Mind"),),
-      body: Center(child: Questions(),))
-      );
+    return MaterialApp(
+        home: Scaffold(
+            appBar: AppBar(
+              title: Text("Trivia Mind"),
+            ),
+            body: Questions()));
   }
 }
