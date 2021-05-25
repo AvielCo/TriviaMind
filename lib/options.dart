@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class Options extends StatefulWidget {
   final List<String> options;
   final int questionIndex;
-  Options(this.options, this.questionIndex);
+  final void Function(int, int) updateAnswers;
+  Options(this.options, this.questionIndex, this.updateAnswers);
   @override
   _OptionsState createState() => _OptionsState();
 }
@@ -24,6 +25,8 @@ class _OptionsState extends State<Options> {
                     setState(() {
                       groupValue = optionSelected as int;
                     });
+                    widget.updateAnswers(
+                        widget.questionIndex, optionSelected as int);
                     print(
                         "Question #${widget.questionIndex}, Selected: $optionSelected");
                   }));

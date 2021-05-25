@@ -30,6 +30,14 @@ class Questions extends StatefulWidget {
 }
 
 class _QuestionsState extends State<Questions> {
+  Map<int, int> answers = {
+    // {questionId: userAnswer}
+  };
+
+  void updateAnswer(int questionIndex, int answerIndex) {
+    answers.update(questionIndex, (value) => answerIndex, ifAbsent: () => answerIndex);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(children: [
@@ -38,7 +46,7 @@ class _QuestionsState extends State<Questions> {
           children: [
             Text(questionDetails.value['question'] as String),
             Options(questionDetails.value['options'] as List<String>,
-                questionDetails.key)
+                questionDetails.key, updateAnswer)
           ],
         );
       }).toList(),
