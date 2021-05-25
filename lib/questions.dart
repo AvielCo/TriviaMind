@@ -8,7 +8,11 @@ class Questions extends StatefulWidget {
     {
       'question':
           'Hello im question number one and im very very very very long question text lol dont be mad. ok?',
-      'options': ['LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG', 'LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG #2', 'short'],
+      'options': [
+        'LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG',
+        'LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG #2',
+        'short'
+      ],
       'correct': 1
     },
     {
@@ -46,7 +50,11 @@ class _QuestionsState extends State<Questions> {
 
   // will hold the question index that the user chose the wrong answers.
   // if question index is not appear in this set, the user's answer is correct.
-  Set<int> wrongAnswers = Set();
+  Set<int> _wrongAnswers = Set();
+
+  // represent the 'check answers' button.
+  // if true, the button has been clicked, therefore, show the results to the user and disable any button.
+  bool _showResults = false;
 
   void updateAnswer(int questionIndex, int answerIndex) {
     answers.update(questionIndex, (value) => answerIndex,
@@ -59,7 +67,7 @@ class _QuestionsState extends State<Questions> {
     if (amountOfQuestions != amountOfUserAnswers) {
       return;
     }
-
+    Set<int> wrongAnswers = Set();
     widget.quiz.asMap().entries.forEach((question) {
       int correctAnswer = question.value['correct'] as int;
       int userAnswer = answers[question.key] as int;
@@ -67,6 +75,10 @@ class _QuestionsState extends State<Questions> {
       if (correctAnswer != userAnswer) {
         wrongAnswers.add(question.key);
       }
+    });
+    setState(() {
+      _showResults = true;
+      _wrongAnswers = wrongAnswers;
     });
   }
 
@@ -86,7 +98,7 @@ class _QuestionsState extends State<Questions> {
                   fontSize: 20,
                 ),
                 Options(questionDetails.value['options'] as List<String>,
-                    questionDetails.key, updateAnswer),
+                    questionDetails.key, updateAnswer, _showResults, _wrongAnswers),
                 // render divider for every question but the last
                 if (questionDetails.key != widget.quiz.length - 1)
                   const Divider(
@@ -99,7 +111,12 @@ class _QuestionsState extends State<Questions> {
               ],
             );
           }).toList(),
-          ElevatedButton(onPressed: checkAnswers, child: Text("Check answers"))
+          ElevatedButton(
+              onPressed: !_showResults ? checkAnswers : null,
+              child: CustomText(
+                !_showResults ? "Check your answers" : "Showing your results",
+                fontSize: 18,
+              ))
         ],
       ),
     );

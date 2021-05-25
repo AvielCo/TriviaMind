@@ -4,8 +4,10 @@ class CustomText extends StatelessWidget {
   final String? align; // string like: 'left' or 'right'
   final String text; // the text to be displayed
   final MaterialColor? color; // the color of the text; one of: Colors.<color>
+  final Color? backgroundColor;
   final double? fontSize; // text size
-  CustomText(this.text, {this.align, this.color, this.fontSize});
+  CustomText(this.text,
+      {this.align, this.color, this.backgroundColor, this.fontSize});
 
   Alignment? checkAlign() {
     if (align == null) {
@@ -18,7 +20,7 @@ class CustomText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: checkAlign(),
-      child: Text(text, style: TextStyle(color: color, fontSize: fontSize)),
+      child: Text(text, style: TextStyle(color: color, backgroundColor: backgroundColor, fontSize: fontSize)),
     );
   }
 }
