@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 
 import 'options.dart';
+import 'custom_text.dart';
 
 class Questions extends StatefulWidget {
   final quiz = [
     {
-      'question': 'Question 1',
-      'options': ['option #1', 'option #2', 'option #3'],
+      'question':
+          'Hello im question number one and im very very very very long question text lol dont be mad. ok?',
+      'options': ['LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG', 'LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG #2', 'short'],
       'correct': 1
     },
     {
-      'question': 'Question 2',
+      'question':
+          'Hello im question number two and im STILL very very very very long question text',
       'options': ['option #1', 'option #2', 'option #3', 'option #4'],
       'correct': 0
     },
@@ -69,17 +72,36 @@ class _QuestionsState extends State<Questions> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(children: [
-      ...widget.quiz.asMap().entries.map((questionDetails) {
-        return Column(
-          children: [
-            Text(questionDetails.value['question'] as String),
-            Options(questionDetails.value['options'] as List<String>,
-                questionDetails.key, updateAnswer)
-          ],
-        );
-      }).toList(),
-      ElevatedButton(onPressed: checkAnswers, child: Text("Check answers"))
-    ]);
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListView(
+        children: [
+          // iterate over quiz and render a list of questions with theire options
+          ...widget.quiz.asMap().entries.map((questionDetails) {
+            return Column(
+              children: [
+                CustomText(
+                  questionDetails.value['question'] as String,
+                  align: 'left',
+                  fontSize: 20,
+                ),
+                Options(questionDetails.value['options'] as List<String>,
+                    questionDetails.key, updateAnswer),
+                // render divider for every question but the last
+                if (questionDetails.key != widget.quiz.length - 1)
+                  const Divider(
+                    color: Colors.black,
+                    height: 2,
+                    thickness: 1,
+                    indent: 15,
+                    endIndent: 15,
+                  )
+              ],
+            );
+          }).toList(),
+          ElevatedButton(onPressed: checkAnswers, child: Text("Check answers"))
+        ],
+      ),
+    );
   }
 }

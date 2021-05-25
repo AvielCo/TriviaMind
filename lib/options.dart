@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import './custom_text.dart';
+
 class Options extends StatefulWidget {
   final List<String> options;
   final int questionIndex;
@@ -17,18 +19,20 @@ class _OptionsState extends State<Options> {
       children: [
         ...widget.options.asMap().entries.map((option) {
           return ListTile(
-              title: Text(option.value),
+              title: CustomText(
+                option.value,
+                fontSize: 18,
+              ),
               leading: Radio(
                   value: option.key,
                   groupValue: groupValue,
-                  onChanged: (optionSelected) {
+                  onChanged: (optionSelected) { 
+                    //fired when choosing different answer.
                     setState(() {
                       groupValue = optionSelected as int;
                     });
                     widget.updateAnswers(
                         widget.questionIndex, optionSelected as int);
-                    print(
-                        "Question #${widget.questionIndex}, Selected: $optionSelected");
                   }));
         }).toList()
       ],
