@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 
+import './questions.dart';
+
 void main() {
-  runApp(TrivialMind());
+  runApp(TriviaMind());
 }
 
-class TrivialMind extends StatelessWidget {
-  // This widget is the root of your application.
-
+class TriviaMind extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Scaffold(
-      appBar: AppBar(
-        title: Text("Trivia Mind"),
-      ),
-    ));
+    return MaterialApp(home: Scaffold(
+      appBar: AppBar(title: Text("Trivia Mind"),),
+      body: Center(child: Questions(),))
+      );
   }
 }
