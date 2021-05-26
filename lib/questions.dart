@@ -1,52 +1,26 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:math';
 
 import 'options.dart';
 import 'custom_text.dart';
 
 class Questions extends StatefulWidget {
-  final quiz = [
-    {
-      'question':
-          'Hello im question number one and im very very very very long question text lol dont be mad. ok?',
-      'options': [
-        'LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG',
-        'LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG #2',
-        'short'
-      ],
-      'correct': 1
-    },
-    {
-      'question':
-          'Hello im question number two and im STILL very very very very long question text',
-      'options': ['option #1', 'option #2', 'option #3', 'option #4'],
-      'correct': 0
-    },
-    {
-      'question': 'Question 3',
-      'options': ['option #1', 'option #2', 'option #3'],
-      'correct': 2
-    },
-    {
-      'question': 'Question 4',
-      'options': [
-        'option #1',
-        'option #2',
-        'option #3',
-        'option #4',
-        'option #5'
-      ],
-      'correct': 1
-    },
-  ];
+  Questions({required Key key}) : super(key: key);
+
   @override
-  _QuestionsState createState() => _QuestionsState();
+  QuestionsState createState() => QuestionsState();
 }
 
-class _QuestionsState extends State<Questions> {
+class QuestionsState extends State<Questions> {
+  var _quiz = <Map<String, Object>>[];
+
   // will hold the answers of the user.
   // an entry will look like: questionIndex: answerIndex
   // using this answers Map later when click on check answers.
-  Map<int, int> answers = Map();
+  Map<int, int> _answers = Map();
 
   // will hold the question index that the user chose the wrong answers.
   // if question index is not appear in this set, the user's answer is correct.
@@ -56,21 +30,49 @@ class _QuestionsState extends State<Questions> {
   // if true, the button has been clicked, therefore, show the results to the user and disable any button.
   bool _showResults = false;
 
+  bool _resetQuiz = false;
+
+  Future<List<Map<String, Object>>> fetchQuizQustions() async {
+    final response = await http
+        .get(Uri.parse('https://opentdb.com/api.php?amount=10&type=multiple'));
+    if (response.statusCode == 200) {
+      Random random = new Random();
+      var quiz = <Map<String, Object>>[];
+      var decodedResults = jsonDecode(response.body)['results'];
+      decodedResults.forEach((question) {
+        String questionText = question['question'];
+        String correctAnswer = question['correct_answer'];
+        List options = question['incorrect_answers'];
+        int randomCorrectAnswerIndex = random.nextInt(options.length);
+        options.insert(randomCorrectAnswerIndex, correctAnswer);
+        var newQuestion = {
+          "question": questionText,
+          "options": options,
+          "correct": randomCorrectAnswerIndex
+        };
+        quiz.add(newQuestion);
+      });
+      return Future.value(quiz);
+    } else {
+      throw Exception('failed to load data.');
+    }
+  }
+
   void updateAnswer(int questionIndex, int answerIndex) {
-    answers.update(questionIndex, (value) => answerIndex,
+    _answers.update(questionIndex, (value) => answerIndex,
         ifAbsent: () => answerIndex);
   }
 
   void checkAnswers() {
-    int amountOfQuestions = widget.quiz.length;
-    int amountOfUserAnswers = answers.length;
+    int amountOfQuestions = _quiz.length;
+    int amountOfUserAnswers = _answers.length;
     if (amountOfQuestions != amountOfUserAnswers) {
       return;
     }
     Set<int> wrongAnswers = Set();
-    widget.quiz.asMap().entries.forEach((question) {
+    _quiz.asMap().entries.forEach((question) {
       int correctAnswer = question.value['correct'] as int;
-      int userAnswer = answers[question.key] as int;
+      int userAnswer = _answers[question.key] as int;
 
       if (correctAnswer != userAnswer) {
         wrongAnswers.add(question.key);
@@ -82,42 +84,67 @@ class _QuestionsState extends State<Questions> {
     });
   }
 
+  void resetQuiz() {
+    setState(() {
+      _resetQuiz = true;
+      _showResults = false;
+      _wrongAnswers = Set();
+      _answers = Map();
+      fetchQuizQustions().then((value) => _quiz = value);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchQuizQustions().then((value) => {
+          this.setState(() {
+            _quiz = value;
+          })
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: ListView(
-        children: [
-          // iterate over quiz and render a list of questions with theire options
-          ...widget.quiz.asMap().entries.map((questionDetails) {
-            return Column(
-              children: [
-                CustomText(
-                  questionDetails.value['question'] as String,
-                  align: 'left',
-                  fontSize: 20,
-                ),
-                Options(questionDetails.value['options'] as List<String>,
-                    questionDetails.key, updateAnswer, _showResults, _wrongAnswers),
-                // render divider for every question but the last
-                if (questionDetails.key != widget.quiz.length - 1)
-                  const Divider(
-                    color: Colors.black,
-                    height: 2,
-                    thickness: 1,
-                    indent: 15,
-                    endIndent: 15,
-                  )
-              ],
-            );
-          }).toList(),
-          ElevatedButton(
-              onPressed: !_showResults ? checkAnswers : null,
-              child: CustomText(
-                !_showResults ? "Check your answers" : "Showing your results",
-                fontSize: 18,
-              ))
-        ],
+      child: ListView.builder(
+        itemCount: _quiz.length,
+        itemBuilder: (context, index) {
+          return Column(children: [
+            CustomText(
+              _quiz[index]['question'] as String,
+              align: 'left',
+              fontSize: 20,
+            ),
+            Options(
+              _quiz[index]['options'] as List,
+              index,
+              updateAnswer,
+              _showResults,
+              _wrongAnswers,
+            ),
+            // render divider for every question but the last
+            if (index != _quiz.length - 1)
+              const Divider(
+                color: Colors.black,
+                height: 2,
+                thickness: 1,
+                indent: 15,
+                endIndent: 15,
+              ),
+            if (index == _quiz.length - 1)
+              ElevatedButton(
+                  onPressed: !_showResults ? checkAnswers : null,
+                  child: CustomText(
+                    !_showResults
+                        ? "Check your answers"
+                        : "Showing your results",
+                    fontSize: 18,
+                  ))
+          ]);
+          
+        },
       ),
     );
   }
