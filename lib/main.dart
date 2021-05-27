@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import './questions.dart';
+import 'quiz.dart';
 
 void main() {
   runApp(TriviaMind());
 }
 
 class TriviaMind extends StatelessWidget {
-  final GlobalKey<QuestionsState> _questionsState = GlobalKey<QuestionsState>();
+  final GlobalKey<QuizState> _questionsState = GlobalKey<QuizState>();
 
   void handleResetEvent() {
     _questionsState.currentState?.resetQuiz();
@@ -27,6 +27,6 @@ class TriviaMind extends StatelessWidget {
                 )
               ],
             ),
-            body: Questions(key: _questionsState)));
+            body: Quiz(key: _questionsState)));
   }
 }
